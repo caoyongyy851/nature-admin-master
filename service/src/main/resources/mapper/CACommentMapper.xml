@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CACommentMapper">
+    <select id="countCZan" resultType="java.lang.Integer">
+        select count(1)
+        from c_a_c_zan
+        where cid = #{param1}
+        and uid = #{param2}
+    </select>
+
+    <select id="getCommentsByAid" resultType="com.ruoyi.nature.dto.CommentDetail">
+        select
+        c.id,
+        c.content,
+        c.likes,
+        c.create_time,
+        u.nickname,
+        u.avatar
+        from
+        c_a_comment c
+        left join c_user u on c.uid = u.id
+        where c.aid=#{aid}
+        and c.deleted = 0
+        and c.checked = 1
+        order by c.id desc
+        limit 10
+    </select>
+
+    <insert id="insertCZan">
+        insert into c_a_c_zan
+        (cid, uid) values (#{param1}, #{param2})
+    </insert>
+
+    <delete id="delCZan">
+    delete
+    from c_a_c_zan
+    where cid=#{param1}
+    and uid = #{param2}
+    </delete>
+
+    <select id="getAllCommentsByAid" resultType="com.ruoyi.nature.dto.CommentDetail">
+        select
+        c.id,
+        c.content,
+        c.likes,
+        c.create_time,
+        u.nickname,
+        u.avatar,
+        case when z.id is not null then true else false end as is_zan
+        from
+        c_a_comment c
+        left join c_user u on c.uid = u.id
+        left join c_a_c_zan z on z.cid = c.id and z.uid = #{param2}
+        where c.aid = #{param1}
+        and c.deleted = 0
+        and c.checked = 1
+        order by c.likes desc, c.id desc
+    </select>
+</mapper>

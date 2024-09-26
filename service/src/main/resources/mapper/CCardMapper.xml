@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CCardMapper">
+
+    <resultMap type="com.ruoyi.nature.domain.CCard" id="CCardResult">
+        <result property="id" column="id"/>
+        <result property="uid" column="uid"/>
+        <result property="title" column="title"/>
+        <result property="time" column="time"/>
+        <result property="position" column="position"/>
+        <result property="pid" column="pid"/>
+        <result property="imgs" column="imgs"/>
+        <result property="imgsNum" column="imgs_num"/>
+        <result property="detail" column="detail"/>
+        <result property="views" column="views"/>
+        <result property="likes" column="likes"/>
+        <result property="comments" column="comments"/>
+        <result property="checked" column="checked"/>
+        <result property="deleted" column="deleted"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="getCardList" resultType="com.ruoyi.nature.dto.CardUserDto">
+        select
+        c.id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.vids,
+        c.vids_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`,
+        t.title as topic_title,
+        u.*
+        from c_card c
+        left join c_user u on c.uid = u.id
+        left join c_topic t on c.topic_id = t.id
+        where c.deleted=0
+        and c.checked=1
+        order by c.id desc
+        limit #{param1},#{param2}
+    </select>
+
+    <select id="getCardByUserList" resultType="com.ruoyi.nature.dto.CardUserDto">
+        select
+        c.id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`,
+        case when c.source = 0 then u.nickname else y.company_name end as nickname,
+        case when c.source = 0 then u.phone else y.phone end as phone,
+        case when c.source = 0 then u.avatar else y.cover end as avatar,
+        case when c.source = 0 then u.sign else y.remark end as sign,
+        case when l.id is not null then true else false end as toLike
+        from c_card c
+        left join c_user u on c.uid = u.id
+        left join c_company y on u.company_id = y.id and c.source = 1
+        left join c_card_like l on c.id = l.cid and l.uid = #{param3}
+        where c.deleted=0
+        and c.checked=1
+        order by c.id desc
+        limit #{param1},#{param2}
+    </select>
+
+    <select id="getDetailById" resultType="com.ruoyi.nature.dto.CardDetail">
+        select
+        c.id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.vids,
+        c.vids_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`,
+        c.topic_id,
+       case when c.source = 0 then u.nickname else y.company_name end as nickname,
+        case when c.source = 0 then u.phone else y.phone end as phone,
+        case when c.source = 0 then u.avatar else y.cover end as avatar,
+        case when c.source = 0 then u.sign else y.remark end as sign,
+        u.create_time,
+        t.title as topic_title
+        from c_card c
+        left join c_user u on c.uid=u.id
+         left join c_company y on u.company_id = y.id and c.source = 1
+        left join c_topic t on c.topic_id = t.id
+        where c.id=#{id}
+    </select>
+
+    <select id="getLikes" resultType="string">
+        select
+        u.avatar
+        from c_card_like l
+        left join c_user u on l.uid = u.id
+        where l.cid = #{param1}
+        order by l.id desc
+        limit 6
+    </select>
+
+    <select id="countLike" resultType="integer">
+    select
+    count(1)
+    from c_card_like
+    where cid = #{param1}
+    and uid = #{param2}
+    </select>
+    <insert id="insertLike">
+    insert into c_card_like
+    (cid, uid)
+    values (#{param1}, #{param2})
+    </insert>
+    <delete id="deleteLike">
+        delete from c_card_like
+        where cid = #{param1} and uid = #{param2}
+    </delete>
+
+    <select id="getCardGuanzhuList" resultType="com.ruoyi.nature.dto.CardUserDto">
+        select
+        c.id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`,
+        u.*,
+        case when l.id is not null then true else false end as toLike
+        from c_card c
+        left join c_user u on c.uid = u.id
+        left join c_card_like l on c.id = l.cid and l.uid = #{param3}
+        where c.deleted=0
+        and c.checked=1
+        and exists (select 1 from c_user_follow f where f.f_uid = c.uid and f.uid = #{param3})
+        order by c.id desc
+        limit #{param1},#{param2}
+    </select>
+
+    <select id="getCountByUid" resultType="map">
+        select
+        count(1) as cards,
+        IFNULL(sum(c.views),0) as callers,
+        IFNULL(sum(c.likes),0)  as fans,
+		IFNULL(sum(c.comments),0) as critics
+        from
+        c_card c
+        where c.uid = #{id}
+        and c.deleted = 0
+    </select>
+
+    <select id="getFollowsCountByUid" resultType="int">
+        select
+        count(1)
+        from
+        c_user_follow
+        where
+        f_uid = #{id}
+    </select>
+
+    <select id="getCardListByUid" resultType="com.ruoyi.nature.dto.CardUserDto">
+        select
+        c.id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`
+        from c_card c
+        where c.deleted=0
+        and c.checked=1
+        and c.uid = #{param1}
+        order by c.id desc
+        limit #{param2},#{param3}
+    </select>
+
+    <select id="getHotCard" resultType="com.ruoyi.nature.dto.CardUserDto">
+        select
+        c.id,
+        c.topic_id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.vids,
+        c.vids_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`,
+        t.title as topic_title,
+        case when c.source = 0 then u.nickname else y.company_name end as nickname,
+        case when c.source = 0 then u.phone else y.phone end as phone,
+        case when c.source = 0 then u.avatar else y.cover end as avatar,
+        case when c.source = 0 then u.sign else y.remark end as sign
+        from c_card c
+        left join c_topic t on t.id = c.topic_id
+        left join c_user u on u.id = c.uid
+         left join c_company y on u.company_id = y.id and c.source = 1
+        where c.deleted=0
+        and c.checked=1
+        and c.topic_id = #{param1}
+        order by c.likes*2 + c.views + c.comments desc
+        limit #{param2},#{param3}
+    </select>
+
+    <select id="getNewCard" resultType="com.ruoyi.nature.dto.CardUserDto">
+         select
+        c.id,
+        c.topic_id,
+        c.uid,
+        c.title,
+        c.position,
+        c.pid,
+        c.imgs,
+        c.imgs_num,
+        c.vids,
+        c.vids_num,
+        c.detail,
+        c.views,
+        c.likes,
+        c.comments,
+        c.create_time as `time`,
+        t.title as topic_title,
+         case when c.source = 0 then u.nickname else y.company_name end as nickname,
+        case when c.source = 0 then u.phone else y.phone end as phone,
+        case when c.source = 0 then u.avatar else y.cover end as avatar,
+        case when c.source = 0 then u.sign else y.remark end as sign
+        from c_card c
+        left join c_topic t on t.id = c.topic_id
+        left join c_user u on u.id = c.uid
+           left join c_company y on u.company_id = y.id and c.source = 1
+        where c.deleted=0
+        and c.checked=1
+        and c.topic_id = #{param1}
+        order by c.create_time desc
+        limit #{param2},#{param3}
+    </select>
+
+    <select id="getCardByUid" resultType="com.ruoyi.nature.dto.CardUserDto">
+        select
+        id,
+        imgs,
+        title,
+        detail
+        from
+        c_card
+        where
+        uid = #{param1}
+        and deleted = 0
+        limit #{param2}, #{param3}
+    </select>
+</mapper>

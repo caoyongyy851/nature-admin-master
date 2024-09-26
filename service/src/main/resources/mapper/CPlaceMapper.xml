@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CPlaceMapper">
+
+    <select id="getPositionList" resultType="com.ruoyi.nature.domain.CPlace">
+        select
+        id,
+        `name`
+        from
+        c_place
+        where
+        `status` = 1
+    </select>
+
+    <select id="getReferPlaceList" resultType="com.ruoyi.nature.dto.PlaceDto">
+        select
+        p.id,
+        p.label,
+        p.name,
+        p.images,
+        p.videos,
+        p.bugs,
+        p.plan_price
+        from
+        c_place p
+        where
+        p.`status` = 1
+        order by p.bugs*5+p.collects*2+p.views desc
+        limit 1
+    </select>
+
+    <select id="getDetailById" resultType="com.ruoyi.nature.dto.PlaceDetail">
+        select
+        p.id,
+        p.`name`,
+        p.category_id,
+        p.detail,
+        p.describle,
+        p.label,
+        p.used,
+        p.images,
+        p.views,
+        p.collects,
+        p.bugs,
+        p.coordinate,
+        p.address,
+        p.plan_price,
+        p.`start`,
+        p.`end`,
+        p.day_type,
+        p.sche_type,
+        p.videos,
+        c.topic_name
+        from
+        c_place p
+        left join c_category c on c.id = p.category_id
+        where
+        p.id = #{id}
+        and p.status = 1
+    </select>
+
+    <select id="countCollect" resultType="int">
+        select
+        count(1)
+        from
+        c_collect
+        where
+        pid = #{param1}
+        and uid = #{param2}
+    </select>
+
+    <insert id="insertCollect">
+        insert into c_collect
+        (pid, uid)
+        values (#{param1}, #{param2})
+    </insert>
+
+    <delete id="deleteCollect">
+        delete from c_collect
+        where pid = #{param1}
+        and uid = #{param2}
+    </delete>
+    <select id="getPlaceByCategoryId" resultType="com.ruoyi.nature.dto.PlaceDto">
+        select
+        p.id,
+        p.label,
+        p.name,
+        p.images,
+        p.videos,
+        p.bugs,
+        p.plan_price
+        from
+        c_place p
+        where
+        p.`status` = 1
+        and p.category_id = #{categoryId}
+        order by p.bugs*5+p.collects*2+p.views desc
+    </select>
+
+    <select id="countLike" resultType="integer">
+    select
+    count(1)
+    from c_place_like
+    where pid = #{param1}
+    and uid = #{param2}
+    </select>
+
+    <insert id="insertLike">
+    insert into c_place_like
+    (pid, uid)
+    values (#{param1}, #{param2})
+    </insert>
+
+    <delete id="deleteLike">
+        delete from c_place_like
+        where pid = #{param1} and uid = #{param2}
+    </delete>
+</mapper>

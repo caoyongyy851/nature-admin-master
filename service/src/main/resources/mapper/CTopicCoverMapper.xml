@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CTopicCoverMapper">
+    <select id="getCover" resultType="com.ruoyi.nature.dto.TopicCover">
+        select
+        id,
+        topic_type,
+        cover_img,
+        deleted,
+        create_time,
+        update_time
+        remark,
+        tag,
+        tag_en,
+        tag_name
+        from
+        c_topic_cover
+        where
+        deleted = 0
+        order by topic_type
+    </select>
+
+</mapper>

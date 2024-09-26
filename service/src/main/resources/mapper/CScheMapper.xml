@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CScheMapper">
+
+    <select id="getOneByPlaceId" resultType="com.ruoyi.nature.domain.CSche">
+        select
+        s.id,
+        s.place_id,
+        s.ytd,
+        s.price,
+        s.days,
+        s.surplus
+        from
+        c_sche s
+        where
+        s.place_id = #{id}
+        order by s.create_time desc
+        limit 1
+    </select>
+
+    <select id="getListByPlaceId" resultType="map">
+        select
+        s.id,
+        s.place_id,
+        s.ytd,
+        s.price,
+        s.days,
+        s.surplus
+        from
+        c_sche s
+        where
+        s.place_id = #{id}
+        order by s.ytd
+    </select>
+
+</mapper>

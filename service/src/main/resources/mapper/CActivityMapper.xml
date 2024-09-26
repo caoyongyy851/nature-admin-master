@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CActivityMapper">
+
+
+  <select id="getSwiperActivity" resultType="com.ruoyi.nature.domain.CActivity">
+    select id,img
+    from c_activity
+    where deleted=0
+    and checked=1
+    and likes+5>unlikes
+    order by views/10+collections+likes+comments-5*unlikes desc
+    limit 5
+  </select>
+  <select id="getActivityList" resultType="com.ruoyi.nature.domain.CActivity">
+    select *
+    from c_activity
+    where deleted=0
+    and checked=1
+    and likes+5>unlikes
+    order by id desc
+    limit #{param1},#{param2}
+  </select>
+
+  <select id="getDetailById" resultType="com.ruoyi.nature.dto.ActivityDetail">
+    select
+    ac.id,
+    ac.pbid,
+    ac.title,
+    ac.time,
+    ac.position,
+    ac.label,
+    ac.img,
+    ac.qrcode_url,
+    ac.detail,
+    ac.person,
+    ac.per_limit,
+    ac.views,
+    ac.collections,
+    ac.likes,
+    ac.unlikes,
+    ac.comments,
+    ac.checked,
+    ac.deleted,
+    ac.create_time,
+    ac.update_time,
+    ac.price,
+    ac.pay_type,
+    u.nickname,
+    u.avatar,
+    u.sex,
+    u.city,
+    u.sign,
+    u.cheats,
+    c.company_name
+    from c_activity ac
+    left join c_user u
+    on ac.pbid=u.id
+    left join c_company c on u.company_id = c.id and c.status = 1
+    where
+    ac.checked=1
+    and ac.id=#{id}
+  </select>
+
+  <select id="getHotActivityList" resultType="com.ruoyi.nature.domain.CActivity">
+    select *
+    from c_activity
+    where deleted=0
+    and checked=1
+    and likes+5>unlikes
+    order by views/10+collections+likes+comments-5*unlikes desc
+    limit #{param1},#{param2}
+  </select>
+  <insert id="insertCollections">
+    insert into c_a_collect
+    (aid, uid)
+    values (#{param1}, #{param2})
+  </insert>
+
+  <insert id="insertAZan">
+    insert into c_a_zan
+    (aid, uid)
+    values (#{param1}, #{param2})
+  </insert>
+
+  <delete id="delCollections">
+    delete from c_a_collect where aid = #{param1} and uid = #{param2}
+  </delete>
+
+  <insert id="insertACai">
+     insert into c_a_cai
+    (aid, uid)
+    values (#{param1}, #{param2})
+  </insert>
+
+  <delete id="delAZan">
+    delete
+    from
+    c_a_zan
+    where aid = #{param1}
+    and uid = #{param2}
+  </delete>
+  <delete id="delACai">
+      delete
+    from
+    c_a_cai
+    where aid = #{param1}
+    and uid = #{param2}
+  </delete>
+
+  <select id="countCollections" resultType="java.lang.Integer">
+    select
+    count(1)
+    from c_a_collect
+    where aid = #{param1}
+    and uid = #{param2}
+  </select>
+  <select id="countAppreciate" resultType="java.lang.Integer">
+    select
+    count(1)
+    from c_a_zan
+    where aid = #{param1}
+    and uid = #{param2}
+  </select>
+  <select id="countTread" resultType="java.lang.Integer">
+    select
+    count(1)
+    from c_a_cai
+    where aid = #{param1}
+    and uid = #{param2}
+  </select>
+
+  <select id="countJoin" resultType="java.lang.Integer">
+    select
+    count(1)
+    from c_a_join
+    where aid = #{param1}
+    and uid = #{param2}
+  </select>
+
+  <insert id="insertJoin">
+     insert into c_a_join
+    (aid, uid, join_time, person, remark)
+    values (#{param1}, #{param2}, #{param3}, #{param4}, #{param5})
+  </insert>
+
+  <delete id="deleteJoin">
+    delete
+    from
+    c_a_join
+    where aid = #{param1}
+    and uid = #{param2}
+  </delete>
+
+  <select id="getActivityByUid" resultType="com.ruoyi.nature.dto.ActivityDetail">
+    select
+       ac.id,
+        ac.pbid,
+        ac.title,
+        ac.time,
+        ac.position,
+        ac.label,
+        ac.img,
+        ac.detail,
+        ac.person,
+        ac.per_limit,
+        ac.views,
+        ac.collections,
+        ac.likes,
+        ac.unlikes,
+        ac.comments,
+        ac.checked,
+        ac.deleted,
+        ac.create_time,
+        ac.update_time
+        from
+        c_activity ac
+        where
+        ac.pbid = #{param1}
+        and ac.deleted = 0
+        order by ac.create_time desc
+        limit #{param2}, #{param3}
+  </select>
+
+  <select id="getActivityUserList" resultType="com.ruoyi.nature.dto.UserDetail">
+  select
+  j.person,
+  j.remark,
+  j.aid,
+  j.join_time,
+  c.nickname,
+  c.phone,
+  c.sign,
+  c.avatar,
+  c.id
+  from c_a_join j
+  inner join c_user c on c.id = j.uid
+  where
+  j.aid = #{id}
+  </select>
+
+  <select id="getJoin" resultType="com.ruoyi.nature.dto.JoinDto">
+    select
+    aid,
+    person,
+    remark
+    from c_a_join
+    where aid = #{param1}
+    and uid = #{param2}
+  </select>
+  <select id="getJoinList" resultType="com.ruoyi.nature.dto.UserDetail">
+  select
+  j.person,
+  j.remark,
+  j.aid,
+  j.join_time,
+  c.nickname,
+  c.phone,
+  c.sign,
+  c.avatar,
+  c.id
+  from c_a_join j
+  inner join c_user c on c.id = j.uid
+  where
+  j.uid = #{id}
+  </select>
+</mapper>

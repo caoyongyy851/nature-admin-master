@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CCommentMapper">
+    <select id="getCommentsByCid" resultType="com.ruoyi.nature.dto.CommentDetail">
+        select
+        c.id,
+        c.content,
+        c.likes,
+        c.create_time,
+        u.nickname,
+        u.avatar
+        from
+        c_comment c
+        left join c_user u on c.uid = u.id
+        where c.cid=#{cid}
+        and c.deleted = 0
+        and c.checked = 1
+        order by c.likes desc, c.id desc
+        limit 3
+    </select>
+
+    <select id="getParentByCid" resultType="com.ruoyi.nature.dto.CommentDetail">
+        select
+        c.id,
+        c.content,
+        c.cid,
+        c.likes,
+        c.create_time,
+        u.nickname,
+        u.avatar
+        from
+        c_comment c
+        left join c_user u on c.uid = u.id
+        where c.id=#{cid}
+        and c.deleted = 0
+        and c.checked = 1
+    </select>
+
+    <insert id="insertCZan">
+        insert into c_c_zan
+        (cid, uid) values (#{param1}, #{param2})
+    </insert>
+    <insert id="insertCCai">
+        insert into c_c_cai
+        (cid, uid) values (#{param1}, #{param2})
+    </insert>
+    <delete id="delCZan">
+    delete
+    from c_c_zan
+    where cid=#{param1}
+    and uid = #{param2}
+    </delete>
+    <delete id="delCCai">
+    delete
+    from c_c_cai
+    where cid=#{param1}
+    and uid = #{param2}
+    </delete>
+
+    <select id="countCCai" resultType="java.lang.Integer">
+        select count(1)
+        from c_c_cai
+        where cid = #{param1}
+        and uid = #{param2}
+    </select>
+
+    <select id="countCZan" resultType="java.lang.Integer">
+        select count(1)
+        from c_c_zan
+        where cid = #{param1}
+        and uid = #{param2}
+    </select>
+
+    <select id="commentStatus" resultType="boolean">
+        select
+        case when z.id is not null then true else false end
+        from
+        c_comment c
+        left join c_c_zan z on z.cid = c.id and z.uid = #{param2}
+        where c.cid = #{param1}
+        and c.deleted = 0
+        and c.checked = 1
+        order by c.likes desc, c.id desc
+        limit 3
+    </select>
+
+    <select id="getAllCommentsByCid" resultType="com.ruoyi.nature.dto.CommentDetail">
+        select
+        c.id,
+        c.content,
+        c.likes,
+        c.create_time,
+        u.nickname,
+        u.avatar,
+        case when z.id is not null then true else false end as is_zan
+        from
+        c_comment c
+        left join c_user u on c.uid = u.id
+        left join c_c_zan z on z.cid = c.id and z.uid = #{param2}
+        where c.cid = #{param1}
+        and c.deleted = 0
+        and c.checked = 1
+        order by c.likes desc, c.id desc
+    </select>
+
+</mapper>

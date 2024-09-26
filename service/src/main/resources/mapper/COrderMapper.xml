@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.COrderMapper">
+
+
+    <select id="getOrderById" resultType="com.ruoyi.nature.dto.OrderDetail">
+        select
+        o.id,
+        o.order_no,
+        o.price,
+        o.remark,
+        o.status,
+        o.used,
+        o.person,
+        o.plan_date,
+        o.phone,
+        case when o.status = 0 then '待支付'
+        when o.status = 1 then '待出行'
+        when o.status = 2 then '已完成'
+        when o.status = 3 then '退款中'
+        when o.status = 4 then '已取消/退款'
+        else '' end as status_str,
+        o.pay_time,
+        o.place_id,
+        o.payment_no,
+        o.create_time,
+        o.code,
+        p.name as place_name
+        from
+        c_order o
+        left join c_place p on o.place_id = p.id
+        where o.id = #{orderId}
+    </select>
+
+    <select id="getByOrderNo" resultType="com.ruoyi.nature.domain.COrder">
+        select
+        o.id,
+        o.order_no,
+        o.price,
+        o.remark,
+        o.status,
+        o.used,
+        o.person,
+        o.plan_date,
+        o.phone,
+        o.pay_time,
+        o.place_id,
+        o.payment_no,
+        o.create_time
+        from
+        c_order o
+        where o.order_no = #{orderNo,jdbcType=VARCHAR} and o.status = 0
+    </select>
+
+    <select id="getOrderByUid" resultType="com.ruoyi.nature.dto.OrderUserDto">
+    select
+    o.id,
+    o.order_no,
+    o.payment_no,
+    o.user_id,
+    o.pay_time,
+    o.place_id,
+    o.price,
+    o.remark,
+    o.status,
+    case when o.status = 0 then '待支付'
+    when o.status = 1 then '待出行'
+    when o.status = 2 then '已完成'
+    when o.status = 3 then '退款中'
+    when o.status = 4 then '已取消/退款'
+    else '' end as status_str,
+    o.used,
+    o.person,
+    o.plan_date,
+    o.phone,
+    o.create_time,
+    o.code,
+    p.name as place_name
+    from
+    c_order o
+    left join c_place p on o.place_id = p.id
+    where o.user_id = #{param1}
+    order by o.create_time desc
+    limit #{param2}, #{param3}
+    </select>
+</mapper>

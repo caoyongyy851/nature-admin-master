@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.nature.mapper.CTopicMapper">
+
+
+    <select id="getTopicList" resultType="com.ruoyi.nature.dto.TopicUserDto">
+        select
+        t.id,
+        t.uid,
+        t.title,
+        t.cover,
+        t.image,
+        t.simple_desc,
+        t.detail,
+        t.views,
+        t.type,
+        t.create_time,
+        case when t.source = 0 then u.nickname else y.company_name end as nickname,
+        case when t.source = 0 then u.avatar else y.cover end as avatar
+        from
+        c_topic t
+        left join c_user u on t.uid = u.id
+        left join c_company y on u.company_id = y.id and t.source = 1
+        where t.type = #{param1}
+        and t.deleted = 0
+        order by  create_time desc, t.views desc
+        limit #{param2}, #{param3}
+    </select>
+
+    <select id="getDetailById" resultType="com.ruoyi.nature.dto.TopicDetail">
+        select
+        t.id,
+        t.uid,
+        t.title,
+        t.cover,
+        t.image,
+        t.simple_desc,
+        t.detail,
+        t.views,
+        t.type,
+        t.create_time,
+        case when t.source = 0 then u.nickname else y.company_name end as nickname,
+        case when t.source = 0 then u.avatar else y.cover end as avatar,
+        (select count(DISTINCT c.uid) from c_card c where c.topic_id = t.id and c.checked = 1 and c.deleted = 0) as join_num
+        from
+        c_topic t
+        left join c_user u on t.uid = u.id
+        left join c_company y on u.company_id = y.id and t.source = 1
+        where t.id = #{id}
+        and t.deleted = 0
+        and t.checked = 1
+    </select>
+
+
+
+    <select id="getTopicBest" resultType="com.ruoyi.nature.dto.TopicUserDto">
+        select
+        t.id,
+        t.title,
+        u.nickname
+        from
+        c_topic t
+        left join c_user u on t.uid = u.id
+        where t.checked = 1
+        and t.deleted = 0
+        and t.create_time between date_sub(now(), interval 6 month ) and now()
+        order by t.views desc
+        limit 1
+    </select>
+    <select id="getTopicSelect" resultType="com.ruoyi.nature.dto.TopicUserDto">
+       SELECT
+        t.id,
+        t.title,
+        u.nickname
+        FROM
+            c_topic t
+            LEFT JOIN c_user u ON t.uid = u.id
+        WHERE
+            t.checked = 1
+            AND t.deleted = 0
+            AND t.create_time BETWEEN date_sub( now(), INTERVAL 6 MONTH )
+            AND now()
+            AND t.views NOT IN (
+            SELECT
+                max( views )
+            FROM
+                c_topic
+            WHERE
+                checked = 1
+                AND deleted = 0
+                AND create_time BETWEEN date_sub( now(), INTERVAL 6 MONTH )
+            AND now())
+        ORDER BY
+        t.views DESC
+    </select>
+
+    <select id="getSwiper"  resultType="com.ruoyi.nature.domain.CSwiperTopic">
+        select
+        s.topic_id,
+        case when s.topic_type = 0 then t.cover
+             when s.topic_type = 1 then s.image
+             else '' end as image,
+        s.topic_type,
+        s.remark,
+        s.title
+        from
+        c_swiper_topic s
+        left join c_topic t on t.id = s.topic_id
+        order by s.swiper_order desc
+    </select>
+
+    <select id="getSwiperTwo"  resultType="com.ruoyi.nature.domain.CSwiperTopic">
+        select
+        t.id as topic_id,
+        t.cover as image,
+        t.title,
+        0 as topic_type
+        from
+        c_topic t
+        where
+        t.checked = 1 and t.deleted = 0
+        order by t.views desc
+        limit 3
+    </select>
+
+    <select id="getTopicByUid" resultType="com.ruoyi.nature.dto.TopicUserDto">
+        select
+        id,
+        cover,
+        title,
+        detail
+        from
+        c_topic
+        where
+        uid = #{param1}
+        and deleted = 0
+        limit #{param2}, #{param3}
+    </select>
+
+    <select id="getTopicCountByUid" resultType="int">
+        select
+        count(1)
+        from
+        c_topic
+        where
+        uid = #{id}
+        and deleted = 0
+    </select>
+
+    <select id="countFollow" resultType="integer">
+        select
+        count(1)
+        from
+        c_topic_follow
+        where
+        topic_id = #{param1}
+        and uid = #{param2}
+    </select>
+
+    <insert id="insertFollow">
+        insert into c_topic_follow (topic_id, uid)
+        values (#{param1}, #{param2})
+    </insert>
+
+    <delete id="deleteFollow">
+        delete from c_topic_follow
+        where topic_id = #{param1}
+        and uid = #{param2}
+    </delete>
+
+    <select id="getFollowTopicList" resultType="com.ruoyi.nature.dto.TopicUserDto">
+        select
+        t.id,
+        t.uid,
+        t.title,
+        t.cover,
+        t.image,
+        t.simple_desc,
+        t.detail,
+        t.views,
+        t.type,·
+        t.create_time,
+        case when t.source = 0 then u.nickname else y.company_name end as nickname,
+        case when t.source = 0 then u.avatar else y.cover end as avatar
+        from
+        c_topic t
+        left join c_user u on t.uid = u.id
+        left join c_company y on u.company_id = y.id and t.source = 1
+        where t.deleted = 0
+        and t.id in (select topic_id from c_topic_follow where uid = #{param1})
+        order by  create_time desc, t.views desc
+        limit #{param2}, #{param3}
+    </select>
+    <select id="getSiftTopicList" resultType="com.ruoyi.nature.dto.TopicUserDto">
+        select
+        t.id,
+        t.uid,
+        t.title,
+        t.cover,
+        t.image,
+        t.simple_desc,
+        t.detail,
+        t.views,
+        t.type,
+        t.create_time,
+        case when t.source = 0 then u.nickname else y.company_name end as nickname,
+        case when t.source = 0 then u.avatar else y.cover end as avatar
+        from
+        c_topic t
+        inner join c_topic_sift s on t.id = s.topic_id
+        left join c_user u on t.uid = u.id
+        left join c_company y on u.company_id = y.id and t.source = 1
+        where t.deleted = 0
+        and t.type = #{param1}
+        order by s.sift_order desc
+        limit #{param2}, #{param3}
+    </select>
+</mapper>
